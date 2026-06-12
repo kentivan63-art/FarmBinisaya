@@ -18,7 +18,7 @@ bld/
 Content/bin/
 Content/obj/
 *.mgstats
-Content.mgcb
+
 
 # .NET specific
 *.user

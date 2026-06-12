@@ -14,10 +14,9 @@ public class Game1 : Game
     private Texture2D _tileTexture;
     private MouseState _previousMouseState;
 
-    // TODO: Add these when you have sprite assets ready
-    // private AssetLoader _assetLoader;
-    // private Player _player;
-    // private List<Entity> _entities;
+    // Asset loading
+    private AssetLoader _assetLoader;
+    private Texture2D _faceSprite;
 
     public Game1()
     {
@@ -34,13 +33,7 @@ public class Game1 : Game
     protected override void Initialize()
     {
         _tileMap = new TileMap(20, 15);
-
-        // TODO: Initialize asset loader and player
-        // _assetLoader = new AssetLoader(Content);
-        // _player = new Player();
-        // _player.Position = new Vector2(100, 100);
-        // _entities = new List<Entity> { _player };
-
+        // AssetLoader needs GraphicsDevice, so initialize in LoadContent instead
         base.Initialize();
     }
 
@@ -48,19 +41,16 @@ public class Game1 : Game
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         
+        // Initialize AssetLoader with GraphicsDevice
+        _assetLoader = new AssetLoader(Content, GraphicsDevice);
+        
         // Create a simple white texture for drawing tiles
         _tileTexture = new Texture2D(GraphicsDevice, 1, 1);
         _tileTexture.SetData(new[] { Color.White });
 
-        // TODO: Load game assets here
-        // Example: Load player sprite
-        // Texture2D playerTexture = _assetLoader.LoadTexture("player");
-        // _player.Sprite = new Sprite(playerTexture);
-
-        // TODO: Load other assets (NPCs, crops, tools, etc.)
-        // Example: Load NPC sprites
-        // Texture2D npcTexture = _assetLoader.LoadTexture("npc");
-        // _entities.Add(new NPC(npcTexture));
+        // Load the face sprite from Content/Sprites/face.xnb
+        // The MGCB editor processed face.png into face.xnb
+        _faceSprite = _assetLoader.LoadTexture("Sprites/face");
     }
 
     protected override void Update(GameTime gameTime)
@@ -129,9 +119,11 @@ public class Game1 : Game
             }
         }
 
-        // TODO: Draw player and entities
-        // foreach (var entity in _entities)
-        //     entity.Draw();
+        // Draw the face sprite at position (100, 100)
+        if (_faceSprite != null)
+        {
+            _spriteBatch.Draw(_faceSprite, new Vector2(100, 100), Color.White);
+        }
 
         _spriteBatch.End();
 
