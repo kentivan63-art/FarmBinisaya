@@ -41,8 +41,8 @@ public class Entity
     /// </summary>
     public virtual void Update(GameTime gameTime)
     {
-        // Apply velocity to position
-        Position += Velocity;
+        float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+        Position += Velocity * deltaTime;
     }
 
     /// <summary>
