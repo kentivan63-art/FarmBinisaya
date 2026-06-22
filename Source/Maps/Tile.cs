@@ -19,14 +19,16 @@ public class Tile
     public bool Walkable { get; set; }
     public bool IsTilled { get; set; }
     public bool IsWatered { get; set; }
+    public int SpriteId { get; set; } // ID for tileset sprite
 
-    public Tile(TileType type, Point gridPosition)
+    public Tile(TileType type, Point gridPosition, int spriteId = 0)
     {
         Type = type;
         GridPosition = gridPosition;
         Walkable = type != TileType.Water && type != TileType.Stone;
         IsTilled = false;
         IsWatered = false;
+        SpriteId = spriteId;
     }
 
     public Color GetColor()

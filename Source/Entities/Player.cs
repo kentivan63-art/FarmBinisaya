@@ -1,5 +1,7 @@
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using FarmBinisayaDirectX.Maps;
 
 namespace FarmBinisayaDirectX.Entities;
 
@@ -16,6 +18,10 @@ public class Player : Entity
     public float Speed { get; set; }
     public int Health { get; set; }
     public int Energy { get; set; }
+    public Point FacingDirection { get; private set; } = new Point(0, 1);
+    public Point Size { get; set; } = new Point(32, 40);
+    public Rectangle Bounds => new Rectangle((int)Position.X, (int)Position.Y, Size.X, Size.Y);
+    public Vector2 Center => new Vector2(Position.X + Size.X / 2f, Position.Y + Size.Y / 2f);
     
     // TODO: Add these when you have sprite assets
     // private Sprite _idleSprite;
@@ -37,10 +43,11 @@ public class Player : Entity
     /// TODO: Add collision detection with tiles and other entities
     /// TODO: Add farming tool interaction
     /// </summary>
-    public override void Update(GameTime gameTime)
+    public void Update(GameTime gameTime, TileMap tileMap)
     {
         KeyboardState keyboard = Keyboard.GetState();
         Vector2 movement = Vector2.Zero;
+        float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
         // Movement input
         if (keyboard.IsKeyDown(Keys.W) || keyboard.IsKeyDown(Keys.Up))
@@ -54,17 +61,13 @@ public class Player : Entity
 
         // Normalize movement vector
         if (movement != Vector2.Zero)
+        {
             movement.Normalize();
+            FacingDirection = GetFacingDirectionFromMovement(movement);
+        }
 
-        // Apply speed
         Velocity = movement * Speed;
-
-        // Call base update to apply velocity
-        base.Update(gameTime);
-
-        // TODO: Add tool interaction
-        // if (keyboard.IsKeyDown(Keys.Space))
-        //     UseTool();
+        MoveWithCollision(Velocity * deltaTime, tileMap);
     }
 
     /// <summary>
@@ -84,11 +87,10 @@ public class Player : Entity
     /// Get the tile position the player is facing
     /// TODO: Implement based on player rotation or last movement direction
     /// </summary>
-    public Vector2 GetFacingPosition()
+    public Point GetFacingTilePosition(int tileSize)
     {
-        // TODO: Calculate which tile the player is facing
-        // This depends on player direction/rotation
-        return Position;
+        Point currentTile = new Point((int)(Center.X / tileSize), (int)(Center.Y / tileSize));
+        return currentTile + FacingDirection;
     }
 
     /// <summary>
@@ -96,10 +98,40 @@ public class Player : Entity
     /// TODO: Render sprite based on current animation state
     /// TODO: Add spriteBatch parameter
     /// </summary>
-    public override void Draw()
+    public void Draw(SpriteBatch spriteBatch, Texture2D texture, Texture2D fallbackTexture)
     {
-        // TODO: Add sprite rendering
-        // Example: _currentSprite.Draw(spriteBatch, Position, Rotation, Scale);
-        base.Draw();
+        Rectangle destination = Bounds;
+
+        if (texture != null)
+        {
+            spriteBatch.Draw(texture, destination, Color.White);
+            return;
+        }
+
+        spriteBatch.Draw(fallbackTexture, destination, Color.OrangeRed);
+    }
+
+    private void MoveWithCollision(Vector2 movement, TileMap tileMap)
+    {
+        if (movement == Vector2.Zero)
+            return;
+
+        Rectangle nextX = Bounds;
+        nextX.Offset((int)movement.X, 0);
+        if (tileMap.IsAreaWalkable(nextX))
+            Position += new Vector2(movement.X, 0);
+
+        Rectangle nextY = Bounds;
+        nextY.Offset(0, (int)movement.Y);
+        if (tileMap.IsAreaWalkable(nextY))
+            Position += new Vector2(0, movement.Y);
+    }
+
+    private static Point GetFacingDirectionFromMovement(Vector2 movement)
+    {
+        if (System.Math.Abs(movement.X) > System.Math.Abs(movement.Y))
+            return movement.X > 0 ? new Point(1, 0) : new Point(-1, 0);
+
+        return movement.Y > 0 ? new Point(0, 1) : new Point(0, -1);
     }
 }
